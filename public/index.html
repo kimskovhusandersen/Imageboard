@@ -1,10 +1,35 @@
 <!doctype html>
 <html>
+
 <head>
-    <title></title>
+    <title>Project Imageboard</title>
+    <link rel="stylesheet" href="/css/master.css">
 </head>
+
 <body>
+    <section id="page">
+
+        <header>
+            <h3 :class="className">{{title}}</h3>
+        </header>
+        <nav>Navigation</nav>
+        <main>
+            <ul>
+                <li class="card" v-for="image in images">
+                    <img v-bind:src='image.url' />
+                    <div class="card-body">
+                        <h5 class="card-title">{{image.title}}</h5>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                        <a href="#" class="btn btn-primary">Go somewhere</a>
+                    </div>
+                </li>
+            </ul>
+        </main>
+        <footer>Footer</footer>
+    </section>
     <script src="/js/vue.js"></script>
     <script src="/js/axios.min.js"></script>
+    <script src="/js/script.js"></script>
 </body>
+
 </html>
