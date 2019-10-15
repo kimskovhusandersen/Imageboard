@@ -2,10 +2,11 @@
     new Vue({
         el: "#page",
         data: {
-            title: "Project Imageboard",
-            className: "funky",
             images: [],
-            chicken: "Jody"
+            username: "",
+            title: "",
+            desc: "",
+            file: null
         },
         created: function() {
             console.log("Created");
@@ -26,8 +27,22 @@
             console.log("Updated");
         },
         methods: {
+            upload: function() {
+                const fd = new FormData();
+                fd.append("image", this.file);
+                fd.append("username", this.username);
+                fd.append("title", this.title);
+                fd.append("desc", this.desc);
+                axios.post("/upload", fd).then(function(res) {
+                    console.log(res);
+                });
+            },
             handleClick: function() {
-                console.log(this.chicken);
+                console.log(this.file);
+            },
+            fileSelected: function(e) {
+                console.log(e.target.files);
+                this.file = e.target.files[0];
             }
         }
     });

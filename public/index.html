@@ -10,9 +10,19 @@
     <section id="page">
 
         <header>
-            <h3 :class="className">{{title}}</h3>
+            <h3>{{title}}</h3>
         </header>
-        <nav>Navigation</nav>
+        <nav>
+            <label for="username">Username:</label>
+            <input id="username" v-model="username" type="text" name="username">
+            <label for="title">Title:</label>
+            <input id="title" v-model="title" type="text" name="title">
+            <label for="desc">Description:</label>
+            <input id="desc" v-model="desc" type="text" name="description">
+            <label for="file">File:</label>
+            <input id="file" type="file" accept="image/*" v-on:change="fileSelected">
+            <button @click="upload" type="submit" name="button">Upload</button>
+        </nav>
         <main>
             <ul>
                 <li class="card" v-for="image in images">
