@@ -1,4 +1,14 @@
-DROP TABLE IF EXISTS images;
+-- start the server:
+-- "sudo service postgresql start"
+
+-- To config the database:
+-- "psql -d imageboard -f sql/config.sql"
+
+-- To select database:
+-- \c testdb
+
+DROP TABLE IF EXISTS images CASCADE;
+DROP TABLE IF EXISTS comments;
 
 CREATE TABLE images(
     id SERIAL PRIMARY KEY,
@@ -8,6 +18,15 @@ CREATE TABLE images(
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE comments(
+    id SERIAL PRIMARY KEY,
+    comment TEXT NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    image_id INT NOT NULL REFERENCES images(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 INSERT INTO images (url, username, title, description) VALUES (
     'https://s3.amazonaws.com/spicedling/jAVZmnxnZ-U95ap2-PLliFFF7TO0KqZm.jpg',
@@ -28,4 +47,22 @@ INSERT INTO images (url, username, title, description) VALUES (
     'discoduck',
     'Hello Berlin',
     'This is going to be worth a lot of money one day.'
+);
+
+INSERT INTO comments (comment, username, image_id) VALUES (
+    'This is funky!',
+    'Arnold',
+    1
+);
+
+INSERT INTO comments (comment, username, image_id) VALUES (
+    'Disco time!!',
+    'Donald',
+    2
+);
+
+INSERT INTO comments (comment, username, image_id) VALUES (
+    'Wow, looks great!',
+    'Bonbon',
+    3
 );

@@ -3,21 +3,20 @@
     padding: 0;
     box-sizing: border-box;
     font-family: "Raleway", sans-serif;
+    line-height: 1.4;
 }
 
-.funky {
-    grid-column: 1/6;
+body {
+    background-image: url('/bulletin-board.jpg');
 }
 
 #page {
     display: grid;
-    width: 100%;
-    height: 100vh;
     grid-template-areas:
         "head head"
         "nav  main"
-        "nav  foot";
-    grid-template-rows: 50px 1fr 30px;
+        "foot foot";
+    grid-template-rows: 50px 1fr 50px;
     grid-template-columns: 150px 1fr;
 }
 
@@ -31,42 +30,169 @@
     background-color: #ffa08c;
 }
 
-#page>main {
-    grid-area: main;
-    background-color: #ffff64;
+nav input {
+    width: 100%;
 }
 
-main .card {
-    width: 20%;
-    height: 33vh;
-    float: left;
-    overflow: hidden;
+#page>main {
     display: grid;
-    grid-template-areas:
-        "img img img"
-        "body body body";
-    grid-template-rows: 70% 30%;
-    grid-template-columns: 20% 1fr 20%;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    justify-content: space-between;
+    min-height: calc(100vh - 100px);
+    padding: 1em 0 0 1em;
+    gap: 1rem;
+}
+
+.card {
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: flex-end;
+    border: 1px solid red;
 }
 
 img {
     grid-area: img;
-    min-height: 100%;
-    width: 100%;
     object-fit: cover;
+    width: 100%;
+    height: 90%;
+    cursor: pointer;
 }
 
 .card-body {
     grid-area: body;
-    z-index: 2;
+    height: 10%;
+    display: grid;
+    grid-template-areas:
+        "title"
+        "text"
+        "link";
+    grid-template-rows: 25% 50% 25%;
     background: #fff;
 }
 
-.card-body .card-title {}
+.card-body .card-title {
+    grid-area: title;
+}
 
-.card-body .card .card-text {}
+.card-body {}
 
-.card-body .btn {}
+.card {}
+
+.card-text {
+    grid-area: text;
+    font-size: 130%;
+    font-size: 1.357vw;
+    margin: 1% auto;
+}
+
+.card-body .btn {
+    grid-area: link;
+}
+
+#image-template {
+    position: relative;
+}
+
+.image-component {
+    border: 3px solid red;
+    background: pink;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: flex-end;
+}
+
+.image-component header {
+    height: 50px;
+}
+
+.image-component img {
+    height: 300px;
+}
+
+#canvas {
+    border: 5px solid yellow;
+}
+
+.close-btn:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 50%;
+    margin: auto;
+    background-color: #fff;
+    height: 50px;
+    width: 50px;
+    z-index: 2;
+}
+
+.close-btn {
+    position: relative;
+    /*
+    top: 50px;
+    right: 50px;
+    height: 70px;
+    */
+    width: 70px;
+    border: 0;
+    border-radius: 0;
+    outline: none;
+    padding: 0;
+    background: transparent;
+    vertical-align: bottom;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.close-btn:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: 50%;
+    margin: auto;
+    background-color: rgba(0, 0, 0, 0.07);
+    height: 70px;
+    width: 70px;
+    z-index: 1;
+    transition: all 0.2s ease-in-out;
+}
+
+.close-btn span {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    background: #000;
+    display: block;
+    width: 20px;
+    height: 1px;
+    top: 0;
+    z-index: 3;
+}
+
+.close-btn span:nth-child(1) {
+    top: 0px;
+    transform: rotate(-45deg);
+}
+
+.close-btn span:nth-child(2) {
+    top: 0px;
+    transform: rotate(45deg);
+}
 
 #page>footer {
     grid-area: foot;
