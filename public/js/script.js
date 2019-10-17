@@ -74,21 +74,18 @@
             title: "",
             desc: "",
             file: null,
-            selectedImage: null
+            selectedImage: null,
+            oldestImageId: null,
+            lowestImageId: null,
+            isNotLastImage: true
         },
         created: function() {},
         mounted: function() {
-            let myVue = this;
-            axios
-                .get("/images")
-                .then(({ data }) => {
-                    myVue.images = data;
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            this.getImages();
         },
-        updated: function() {},
+        updated: function() {
+            this.updateMoreButton();
+        },
         destroyed: function() {},
         methods: {
             upload: function() {
@@ -102,6 +99,25 @@
                     myVue.images.unshift(data);
                     this.resetForm();
                 });
+            },
+            getImages: function() {
+                axios
+                    .get("/images")
+                    .then(({ data }) => {
+                        this.images = data;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
+            getMoreImages: function() {
+                console.log();
+                axios
+                    .get(`/more-images/${this.oldestImageId}`)
+                    .then(({ data }) => {
+                        this.images = this.images.concat(...data);
+                    })
+                    .catch();
             },
             resetForm: function() {
                 this.file = null;
@@ -118,6 +134,17 @@
             },
             closeImage: function() {
                 this.selectedImage = null;
+            },
+            updateMoreButton: function() {
+                if (this.images.length > 0) {
+                    this.lowestImageId = this.images[
+                        this.images.length - 1
+                    ].lowest_id;
+                    this.oldestImageId = this.images[this.images.length - 1].id;
+                    if (this.oldestImageId === this.lowestImageId) {
+                        this.isNotLastImage = false;
+                    }
+                }
             }
         }
     });

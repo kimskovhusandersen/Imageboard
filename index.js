@@ -45,8 +45,19 @@ app.get("/images", (req, res) => {
         });
 });
 
-app.get("/images/:id", (req, res) => {
-    const { id: imageId } = req.params;
+app.get("/more-images/:oldestId", (req, res) => {
+    const { oldestId } = req.params;
+    db.getMoreImages(oldestId)
+        .then(({ rows }) => {
+            res.json(rows);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+app.get("/images/:imageId", (req, res) => {
+    const { imageId } = req.params;
     db.getImage(imageId)
         .then(({ rows }) => {
             res.json(rows);
@@ -84,7 +95,6 @@ app.get("/images/:id/comments", (req, res) => {
 
 app.post("/images/:id/comments", (req, res) => {
     const { username, comment, imageId } = req.body;
-    console.log("INSIDE POST ROUTE", req.body, username, comment, imageId);
     db.addComment(username, comment, imageId)
         .then(({ rows }) => {
             //send image to client

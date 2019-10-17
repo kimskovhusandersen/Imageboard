@@ -43,6 +43,16 @@ nav input {
     gap: 1rem;
 }
 
+.more-button {
+    visibility: hidden;
+    display: none;
+}
+
+.more-button.on {
+    visibility: visible;
+    display: block;
+}
+
 .card {
     height: 300px;
     display: flex;

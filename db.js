@@ -5,7 +5,34 @@ const db = spicedPg(
 );
 
 exports.getImages = () => {
-    return db.query(`SELECT * FROM images ORDER BY id DESC;`);
+    return db.query(`
+        SELECT *,
+            (SELECT id FROM images
+            ORDER BY id ASC
+            LIMIT 1)
+            AS lowest_id
+        FROM images
+        ORDER BY id DESC
+        LIMIT 2;`);
+};
+
+exports.getMoreImages = oldestId => {
+    return db
+        .query(
+            `SELECT *,
+                (SELECT id FROM images
+                ORDER BY id ASC
+                LIMIT 1)
+                AS lowest_id
+            FROM images WHERE id < $1
+            ORDER BY id DESC
+            LIMIT 2;`,
+            [oldestId]
+        )
+        .catch(err => {
+            console.log(err);
+            return Promise.reject(new Error("Can't get more images"));
+        });
 };
 
 exports.getImage = id => {
