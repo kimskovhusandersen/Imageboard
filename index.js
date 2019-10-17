@@ -74,6 +74,8 @@ app.post("/upload", uploader.single("image"), s3.upload, (req, res) => {
     const url = `${s3Url}${file.filename}`;
     db.addImage(username, title, desc, url)
         .then(({ rows }) => {
+            req.body.imageId = rows[0].id;
+            mw.formatTags(req, res);
             //send image to client
             res.json(rows[0]);
         })
@@ -104,6 +106,33 @@ app.post("/images/:id/comments", (req, res) => {
         .catch(err => {
             console.log(err);
             res.sendStatus(500);
+        });
+});
+
+app.get("/images/:imageId/tags", (req, res) => {
+    const { imageId } = req.params;
+    db.getTags(imageId)
+        .then(({ rows }) => {
+            res.json(rows);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+app.post("/images/:imageId/tags", mw.formatTags, (req, res) => {
+    let { tagPromises } = req.body;
+    Promise.all(tagPromises)
+        .then(result => {
+            let tags = [];
+            //send tags to client
+            result.forEach(({ rows }) => {
+                tags.push(rows);
+            });
+            res.json(tags);
+        })
+        .catch(err => {
+            console.log(err);
         });
 });
 

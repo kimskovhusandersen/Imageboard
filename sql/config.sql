@@ -9,6 +9,8 @@
 
 DROP TABLE IF EXISTS images CASCADE;
 DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS image_tag;
 
 CREATE TABLE images(
     id SERIAL PRIMARY KEY,
@@ -27,6 +29,18 @@ CREATE TABLE comments(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
+CREATE TABLE tags(
+    id SERIAL PRIMARY KEY,
+    tag TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE image_tag (
+  tag_id INT NOT NULL,
+  image_id INT NOT NULL,
+  PRIMARY KEY (tag_id,image_id)
+);
 
 INSERT INTO images (url, username, title, description) VALUES (
     'https://s3.amazonaws.com/spicedling/jAVZmnxnZ-U95ap2-PLliFFF7TO0KqZm.jpg',
@@ -49,20 +63,14 @@ INSERT INTO images (url, username, title, description) VALUES (
     'This is going to be worth a lot of money one day.'
 );
 
-INSERT INTO comments (comment, username, image_id) VALUES (
-    'This is funky!',
-    'Arnold',
-    1
-);
+INSERT INTO comments (comment, username, image_id) VALUES ('This is funky!','Arnold',1);
+INSERT INTO comments (comment, username, image_id) VALUES ('Disco time!!','Donald',2);
+INSERT INTO comments (comment, username, image_id) VALUES ('Wow, looks great!','Bonbon',3);
 
-INSERT INTO comments (comment, username, image_id) VALUES (
-    'Disco time!!',
-    'Donald',
-    2
-);
+INSERT INTO tags (tag) VALUES ('funky');
+INSERT INTO tags (tag) VALUES ('colorful');
+INSERT INTO tags (tag) VALUES ('discy');
 
-INSERT INTO comments (comment, username, image_id) VALUES (
-    'Wow, looks great!',
-    'Bonbon',
-    3
-);
+INSERT INTO image_tag (tag_id, image_id) VALUES (1,1);
+INSERT INTO image_tag (tag_id, image_id) VALUES (2,1);
+INSERT INTO image_tag (tag_id, image_id) VALUES (3,1);

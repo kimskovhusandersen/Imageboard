@@ -62,6 +62,24 @@ exports.getComments = imageId => {
         });
 };
 
+exports.getTags = imageId => {
+    return db
+        .query(
+            `
+            SELECT tag, image_tag.image_id
+            FROM tags
+            INNER JOIN image_tag ON tags.id = image_tag.tag_id
+            WHERE $1 = image_tag.image_id
+            ORDER BY tag DESC;
+            `,
+            [imageId]
+        )
+        .catch(err => {
+            console.log(err);
+            return Promise.reject(new Error("Can't get tags"));
+        });
+};
+
 exports.addImage = (username, title, desc, imageUrl) => {
     return db
         .query(
@@ -87,5 +105,32 @@ exports.addComment = (username, comment, imageId) => {
         .catch(err => {
             console.log(err);
             return Promise.reject(new Error("Can't insert comment"));
+        });
+};
+
+exports.upsertTag = (tag, imageId) => {
+    return db
+        .query(
+            `
+        WITH insertedTag AS(
+            INSERT INTO tags (tag)
+            VALUES ($1)
+            ON CONFLICT (tag) DO
+            UPDATE SET tag = $1
+            RETURNING id, tag
+        ), insertedImageTag AS (
+            INSERT INTO image_tag (tag_id, image_id)
+            SELECT insertedTag.id, $2 FROM insertedTag
+            RETURNING tag_id, image_id
+        )
+        SELECT tag, insertedImageTag.image_id
+        FROM insertedTag
+        INNER JOIN insertedImageTag on insertedTag.id = insertedImageTag.tag_id;
+        `,
+            [tag, imageId]
+        )
+        .catch(err => {
+            console.log(err);
+            return Promise.reject(new Error("Can't insert tag"));
         });
 };

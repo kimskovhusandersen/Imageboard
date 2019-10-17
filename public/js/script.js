@@ -1,6 +1,55 @@
 (function() {
-    Vue.component("first-component", {
+    let ImageTagsComponent = {
+        template: "#image-tags-template",
+        data: function() {
+            return {
+                imageTags: [],
+                formTags: "",
+                imageId: null
+            };
+        },
+        props: ["selectedImage"],
+        mounted: function() {
+            this.getTags();
+        },
+        updated: function() {},
+        watch: {
+            selectedImage: function() {
+                this.getTags();
+            }
+        },
+        methods: {
+            getTags: function() {
+                axios
+                    .get(`/images/${this.selectedImage}/tags`)
+                    .then(({ data }) => {
+                        this.imageTags = data;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
+            submitTags: function() {
+                let fd = {
+                    tags: this.formTags,
+                    imageId: this.selectedImage
+                };
+                axios
+                    .post(`/images/${this.selectedImage}/tags`, fd)
+                    .then(({ data }) => {
+                        this.imageTags = this.imageTags.concat(...data);
+                        this.resetForm();
+                    });
+            },
+            resetForm: function() {
+                this.formTags = "";
+            }
+        }
+    };
+
+    Vue.component("image-component", {
         template: "#image-template",
+        components: { "image-tags-component": ImageTagsComponent },
         data: function() {
             return {
                 count: 0,
@@ -86,11 +135,13 @@
 
     new Vue({
         el: "#page",
+        // components: { Image, Tags },
         data: {
             images: [],
             username: "",
             title: "",
             desc: "",
+            tags: "",
             file: null,
             selectedImage: location.hash.slice(1),
             oldestImageId: null,
@@ -129,6 +180,7 @@
                 fd.append("username", this.username);
                 fd.append("title", this.title);
                 fd.append("desc", this.desc);
+                fd.append("tags", this.tags);
                 axios.post("/upload", fd).then(({ data }) => {
                     myVue.images.unshift(data);
                     this.resetForm();
@@ -157,6 +209,7 @@
                 this.username = "";
                 this.title = "";
                 this.desc = "";
+                this.tags = "";
             },
             fileSelected: function(e) {
                 this.file = e.target.files[0];
