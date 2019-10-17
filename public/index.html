@@ -76,7 +76,7 @@
                 </section>
                 <section>
                     <div class="row">
-                        <image-tags-component v-bind:selected-image="selectedImage" v-if="selectedImage"></image-tags-component>
+                        <image-tags-component @contact-chicken="closeImage" v-bind:selected-image="selectedImage" v-if="selectedImage"></image-tags-component>
                     </div>
                 </section>
                 <section>
@@ -124,7 +124,7 @@
                     <h3>Tags</h3>
 
                     <div v-for="imageTag in imageTags">
-                        <a href="">{{imageTag.tag}}</a>
+                        <button @click="clickTag(imageTag.tag_id)">{{imageTag.tag}}</button>
                     </div>
                 </div>
             </section>

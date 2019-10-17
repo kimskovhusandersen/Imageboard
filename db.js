@@ -16,6 +16,18 @@ exports.getImages = () => {
         LIMIT 2;`);
 };
 
+exports.getImagesByTag = tagId => {
+    return db.query(`
+        SELECT *,
+            (SELECT id FROM images
+            ORDER BY id ASC
+            LIMIT 1)
+            AS lowest_id
+        FROM images
+        ORDER BY id DESC
+        LIMIT 4;`);
+};
+
 exports.getMoreImages = oldestId => {
     return db
         .query(
@@ -66,7 +78,7 @@ exports.getTags = imageId => {
     return db
         .query(
             `
-            SELECT tag, image_tag.image_id
+            SELECT tag, image_tag.tag_id, image_tag.image_id
             FROM tags
             INNER JOIN image_tag ON tags.id = image_tag.tag_id
             WHERE $1 = image_tag.image_id
@@ -123,7 +135,7 @@ exports.upsertTag = (tag, imageId) => {
             SELECT insertedTag.id, $2 FROM insertedTag
             RETURNING tag_id, image_id
         )
-        SELECT tag, insertedImageTag.image_id
+        SELECT tag, insertedImageTag.tag_id, insertedImageTag.image_id
         FROM insertedTag
         INNER JOIN insertedImageTag on insertedTag.id = insertedImageTag.tag_id;
         `,

@@ -5,7 +5,8 @@
             return {
                 imageTags: [],
                 formTags: "",
-                imageId: null
+                imageId: null,
+                tagClicked: null
             };
         },
         props: ["selectedImage"],
@@ -43,6 +44,11 @@
             },
             resetForm: function() {
                 this.formTags = "";
+            },
+            clickTag: function(tagId) {
+                console.log("tag clicked");
+                console.log(tagId);
+                this.$emit("contact-chicken", tagId);
             }
         }
     };
@@ -86,8 +92,8 @@
             }
         },
         methods: {
-            closeImage: function() {
-                this.$emit("close-image-modal");
+            closeImage: function(tagId) {
+                this.$emit("close-image-modal", tagId);
             },
             submitComment: function() {
                 let fd = {
@@ -146,7 +152,8 @@
             selectedImage: location.hash.slice(1),
             oldestImageId: null,
             lowestImageId: null,
-            isNotLastImage: true
+            isNotLastImage: true,
+            tagId: null
         },
         created: function() {},
         mounted: function() {
@@ -187,8 +194,13 @@
                 });
             },
             getImages: function() {
+                let path = "/images";
+                if (!isNaN(this.tagId) && this.tagId != null) {
+                    path += `/tags/${this.tagId}`;
+                }
+                console.log(path);
                 axios
-                    .get("/images")
+                    .get(path)
                     .then(({ data }) => {
                         this.images = data;
                     })
@@ -214,7 +226,9 @@
             fileSelected: function(e) {
                 this.file = e.target.files[0];
             },
-            closeImage: function() {
+            closeImage: function(tagId) {
+                this.tagId = tagId;
+                this.getImages();
                 this.selectedImage = null;
                 location.hash = "";
                 history.replaceState(null, null, " ");

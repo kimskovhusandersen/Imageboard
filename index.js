@@ -120,6 +120,17 @@ app.get("/images/:imageId/tags", (req, res) => {
         });
 });
 
+app.get("/images/tags/:tagId", (req, res) => {
+    const { tagId } = req.params;
+    db.getImagesByTag(tagId)
+        .then(({ rows }) => {
+            res.json(rows);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
 app.post("/images/:imageId/tags", mw.formatTags, (req, res) => {
     let { tagPromises } = req.body;
     Promise.all(tagPromises)
