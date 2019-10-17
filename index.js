@@ -5,6 +5,7 @@ const multer = require("multer");
 const uidSafe = require("uid-safe");
 const path = require("path");
 const s3 = require("./s3");
+const mw = require("./middleware");
 const { s3Url } = require("./config");
 
 const diskStorage = multer.diskStorage({
@@ -56,7 +57,7 @@ app.get("/more-images/:oldestId", (req, res) => {
         });
 });
 
-app.get("/images/:imageId", (req, res) => {
+app.get("/images/:imageId", mw.requireNumber, (req, res) => {
     const { imageId } = req.params;
     db.getImage(imageId)
         .then(({ rows }) => {

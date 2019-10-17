@@ -36,7 +36,19 @@ exports.getMoreImages = oldestId => {
 };
 
 exports.getImage = id => {
-    return db.query(`SELECT * FROM images WHERE $1 = id`, [id]);
+    return db
+        .query(
+            `
+        SELECT *,
+            (SELECT id FROM images WHERE $1 - 1 = id) AS prev_id,
+            (SELECT id FROM images WHERE $1 + 1 = id) AS next_id
+        FROM images WHERE $1 = id;`,
+            [id]
+        )
+        .catch(err => {
+            console.log(err);
+            return Promise.reject(new Error(`Can't get image with ID ${id}`));
+        });
 };
 
 exports.getComments = imageId => {

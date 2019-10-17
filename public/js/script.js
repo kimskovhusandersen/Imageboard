@@ -14,18 +14,7 @@
         props: ["selectedImage"],
         mounted: function() {
             // let myVue = this;
-            axios
-                .get(`/images/${this.selectedImage}`)
-                .then(({ data }) => {
-                    this.image = data[0];
-                    return axios.get(`/images/${this.selectedImage}/comments`);
-                })
-                .then(({ data }) => {
-                    this.comments = data;
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            this.getImage();
         },
         updated: function() {
             const canvas = document.getElementById("canvas");
@@ -40,6 +29,11 @@
                 img.onload = () => {
                     ctx.drawImage(img, 0, 0);
                 };
+            }
+        },
+        watch: {
+            selectedImage: function() {
+                this.getImage();
             }
         },
         methods: {
@@ -62,6 +56,30 @@
             resetForm: function() {
                 this.username = "";
                 this.comment = "";
+            },
+            getImage: function() {
+                let self = this;
+                axios
+                    .get(`/images/${this.selectedImage}`)
+                    .then(({ data }) => {
+                        if (!data[0]) {
+                            return this.closeImage();
+                        }
+                        self.image = data[0];
+                        return axios.get(
+                            `/images/${self.selectedImage}/comments`
+                        );
+                    })
+                    .then(result => {
+                        if (!result) {
+                            return;
+                        }
+                        const { data } = result;
+                        self.comments = data;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
             }
         }
     });
@@ -74,7 +92,7 @@
             title: "",
             desc: "",
             file: null,
-            selectedImage: null,
+            selectedImage: location.hash.slice(1),
             oldestImageId: null,
             lowestImageId: null,
             isNotLastImage: true
@@ -82,6 +100,22 @@
         created: function() {},
         mounted: function() {
             this.getImages();
+            addEventListener("hashchange", () => {
+                this.selectedImage = location.hash.slice(1);
+            });
+            addEventListener("keydown", e => {
+                if (this.selectedImage) {
+                    if (e.keyCode == 27) {
+                        this.closeImage();
+                    }
+                    if (e.keyCode == 37) {
+                        this.prevImage();
+                    }
+                    if (e.keyCode == 39) {
+                        this.nextImage();
+                    }
+                }
+            });
         },
         updated: function() {
             this.updateMoreButton();
@@ -111,7 +145,6 @@
                     });
             },
             getMoreImages: function() {
-                console.log();
                 axios
                     .get(`/more-images/${this.oldestImageId}`)
                     .then(({ data }) => {
@@ -125,15 +158,21 @@
                 this.title = "";
                 this.desc = "";
             },
-            handleClick: function() {
-                // console.log(this.file);
-            },
             fileSelected: function(e) {
-                // console.log(e.target.files);
                 this.file = e.target.files[0];
             },
             closeImage: function() {
                 this.selectedImage = null;
+                location.hash = "";
+                history.replaceState(null, null, " ");
+            },
+            prevImage: function() {
+                this.selectedImage--;
+                location.hash = `#${this.selectedImage}`;
+            },
+            nextImage: function() {
+                this.selectedImage++;
+                location.hash = `#${this.selectedImage}`;
             },
             updateMoreButton: function() {
                 if (this.images.length > 0) {

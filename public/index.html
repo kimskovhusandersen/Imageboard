@@ -25,7 +25,9 @@
         </nav>
         <main id="main">
             <div class="card" v-for="image in images">
-                <img @click="selectedImage = image.id" @click="image = image" v-bind:src='image.url' />
+                <a :href="'#'+image.id">
+                    <img @click="image = image" v-bind:src='image.url' />
+                </a>
                 <div class="card-body">
                     <h5 class="card-title">{{image.title}}</h5>
                     <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
@@ -46,11 +48,16 @@
     <script id="image-template" type="text/x-template">
         <div class="image-component">
             <header>
+                <a :href="'#'+image.prev_id">
+                    Prev
+                </a>
                 <button type="button" @click="closeImage" class="close-btn">
                     <span>&nbsp;</span>
                     <span>&nbsp;</span>
                 </button>
-
+                <a :href="'#'+image.next_id">
+                    Next
+                </a>
 
             </header>
             <main>
