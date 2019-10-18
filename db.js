@@ -109,6 +109,26 @@ exports.getImage = id => {
         });
 };
 
+exports.countImages = () => {
+    return db
+        .query(`SELECT count(*) AS image_count FROM images;`)
+        .catch(err => {
+            console.log(err);
+            return Promise.reject(new Error(`Can't count images`));
+        });
+};
+
+exports.getTag = tagId => {
+    return db
+        .query(`SELECT * FROM tags WHERE tags.id = $1;`, [tagId])
+        .catch(err => {
+            console.log(err);
+            return Promise.reject(
+                new Error(`Can't get image with ID ${tagId}`)
+            );
+        });
+};
+
 exports.getComments = imageId => {
     return db
         .query(`SELECT * FROM comments WHERE $1 = image_id ORDER BY id DESC;`, [

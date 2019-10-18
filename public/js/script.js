@@ -14,7 +14,7 @@
             this.getTags();
         },
         updated: function() {
-            console.log("SELECTED IMAGE", this.selectedImage);
+            // console.log("SELECTED IMAGE", this.selectedImage);
         },
         watch: {
             selectedImage: function() {
@@ -109,6 +109,9 @@
             }
         },
         methods: {
+            setTag: function(tagId) {
+                this.$emit("contact-mother-chicken", tagId);
+            },
             closeImage: function(tagId) {
                 this.$emit("close-image-modal", tagId);
             },
@@ -161,6 +164,7 @@
         // components: { Image, Tags },
         data: {
             images: [],
+            imageCount: null,
             username: "",
             title: "",
             desc: "",
@@ -170,11 +174,16 @@
             oldestImageId: null,
             lowestImageId: null,
             isNotLastImage: true,
-            tagId: null
+            selectedTag: null,
+            tag: null,
+            notifications: []
         },
-        created: function() {},
+        created: function() {
+            this.setImageCount();
+        },
         mounted: function() {
             this.getImages();
+            this.updateImageCount();
             addEventListener("hashchange", () => {
                 this.selectedImage = location.hash.slice(1);
             });
@@ -194,11 +203,21 @@
         },
         updated: function() {
             this.updateMoreButton();
-            console.log("OLDEST IMAGE'S ID:", this.oldestImageId);
+            this.$watch("imageCount", () => {
+                this.notifications.push("A new image has been uploaded");
+            });
         },
         destroyed: function() {},
-
+        watch: {
+            selectedTag: function() {
+                this.getTag();
+            }
+        },
         methods: {
+            setTag: function(tagId) {
+                this.selectedTag = tagId;
+                this.closeImage();
+            },
             upload: function() {
                 let myVue = this;
                 const fd = new FormData();
@@ -214,8 +233,8 @@
             },
             getImages: function() {
                 let path = "/images";
-                if (!isNaN(this.tagId) && this.tagId != null) {
-                    path += `/tags/${this.tagId}`;
+                if (!isNaN(this.selectedTag) && this.selectedTag != null) {
+                    path += `/tags/${this.selectedTag}`;
                 }
                 axios
                     .get(path)
@@ -228,20 +247,48 @@
             },
             getMoreImages: function() {
                 let path = `/more-images/${this.oldestImageId}`;
-                if (!isNaN(this.tagId) && this.tagId != null) {
-                    path += `/tags/${this.tagId}`;
+                if (!isNaN(this.selectedTag) && this.selectedTag != null) {
+                    path += `/tags/${this.selectedTag}`;
                 }
                 axios
                     .get(path)
                     .then(({ data }) => {
                         this.images = this.images.concat(...data);
-
-                        this.images.forEach(im => {
-                            console.log("IMAGE ID", im.image_id);
-                        });
-                        // this.getNextImages();
                     })
                     .catch();
+            },
+            setImageCount: function() {
+                console.log("counting images");
+
+                axios
+                    .get(`/count-images`)
+                    .then(({ data }) => {
+                        this.imageCount = data.rows[0].image_count;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
+            updateImageCount: function() {
+                setTimeout(() => {
+                    this.setImageCount();
+                    this.updateImageCount();
+                }, 5000);
+            },
+            getTag: function() {
+                axios
+                    .get(`/tag/${this.selectedTag}`)
+                    .then(({ data }) => {
+                        this.tag = data[0];
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
+            removeTagFilter: function() {
+                this.selectedTag = null;
+                this.tag = null;
+                this.getImages();
             },
             resetForm: function() {
                 this.file = null;
@@ -253,8 +300,7 @@
             fileSelected: function(e) {
                 this.file = e.target.files[0];
             },
-            closeImage: function(tagId) {
-                this.tagId = tagId;
+            closeImage: function() {
                 this.getImages();
                 this.selectedImage = null;
                 location.hash = "";
@@ -270,14 +316,14 @@
             },
             updateMoreButton: function() {
                 if (this.images.length > 0) {
-                    this.lowestImageId = this.images[
-                        this.images.length - 1
-                    ].lowest_id;
+                    this.lowestImageId = this.images.slice(-1)[0].lowest_id;
                     this.oldestImageId = this.images.slice(-1)[0].image_id;
-                    console.log("NUMBER OF IMAGES", this.images.length);
                     console.log("LOWEST ID IN DATABASE", this.lowestImageId);
-                    console.log("OLDEST IMAGE'S ID:", this.oldestImageId);
-                    if (this.oldestImageId === this.lowestImageId) {
+                    console.log("LOWEST ID IN ARRAY", this.oldestImageId);
+                    if (
+                        this.oldestImageId === this.lowestImageId ||
+                        this.lowestImageId == null
+                    ) {
                         this.isNotLastImage = false;
                     } else {
                         this.isNotLastImage = true;

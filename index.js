@@ -79,6 +79,28 @@ app.get("/images/:imageId", mw.requireNumber, (req, res) => {
         });
 });
 
+app.get("/count-images", (req, res) => {
+    db.countImages()
+        .then(result => {
+            console.log(result);
+            res.json(result);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+app.get("/tag/:tagId", (req, res) => {
+    const { tagId } = req.params;
+    db.getTag(tagId)
+        .then(({ rows }) => {
+            res.json(rows);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
 app.post("/upload", uploader.single("image"), s3.upload, (req, res) => {
     const { username, title, desc } = req.body;
     const { file } = req;

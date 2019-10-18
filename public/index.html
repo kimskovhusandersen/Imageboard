@@ -11,6 +11,9 @@
 
         <header id="header">
             <h3>{{title}}</h3>
+            <div class="notifcations" v-for="notification in notifications" v-if="notifications">
+                {{notification}}. Click <button @click="getImages">here</button> to update imageboard.
+            </div>
         </header>
         <nav>
             <label for="username">Username:</label>
@@ -24,8 +27,10 @@
             <label for="tags">Tags:</label>
             <input id="tags" v-model="tags" type="text" name="tags">
             <button @click="upload" type="submit" name="upload-btn">Upload</button>
+            <p v-if="tag">Filtered by tag: <button>{{tag.tag}}</button><button @click="removeTagFilter(tag.id)">X</button></p>
         </nav>
         <main id="main">
+
             <div class="card" v-for="image in images">
                 <a :href="'#'+image.image_id">
                     <img @click="image = image" v-bind:src='image.url' />
@@ -39,7 +44,7 @@
             <button class="more-button" v-bind:class="{ on: isNotLastImage}" @click="getMoreImages" type="submit" name="more-btn">More</button>
         </main>
 
-        <image-component @close-image-modal="closeImage" v-bind:selected-image="selectedImage" v-if="selectedImage"></image-component>
+        <image-component @close-image-modal="closeImage" @contact-mother-chicken="setTag" v-bind:selected-image="selectedImage" v-if="selectedImage"></image-component>
         <!-- <p @click="selectedFruit = fruit.id" class="fruit" v-for="fruit in fruits" v-if="fruits.length">{{fruit.title}}</p> -->
 
 
@@ -76,7 +81,7 @@
                 </section>
                 <section>
                     <div class="row">
-                        <image-tags-component @contact-chicken="closeImage" v-bind:selected-image="selectedImage" v-if="selectedImage"></image-tags-component>
+                        <image-tags-component @contact-chicken="setTag" v-bind:selected-image="selectedImage" v-if="selectedImage"></image-tags-component>
                     </div>
                 </section>
                 <section>
