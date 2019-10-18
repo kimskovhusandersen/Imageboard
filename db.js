@@ -6,7 +6,7 @@ const db = spicedPg(
 
 exports.getImages = () => {
     return db.query(`
-        SELECT *,
+        SELECT *, images.id AS image_id,
             (SELECT id FROM images
             ORDER BY id ASC
             LIMIT 1)
@@ -17,22 +17,35 @@ exports.getImages = () => {
 };
 
 exports.getImagesByTag = tagId => {
-    return db.query(`
-        SELECT *,
-            (SELECT id FROM images
+    return db.query(
+        `
+        SELECT *, images.id AS image_id,
+            (SELECT images.id FROM images
+            INNER JOIN image_tag
+            ON images.id = image_tag.image_id
+            INNER JOIN tags
+            ON tags.id = image_tag.tag_id
+            WHERE image_tag.tag_id = $1
             ORDER BY id ASC
             LIMIT 1)
             AS lowest_id
         FROM images
-        ORDER BY id DESC
-        LIMIT 4;`);
+        INNER JOIN image_tag
+        ON images.id = image_tag.image_id
+        INNER JOIN tags
+        ON tags.id = image_tag.tag_id
+        WHERE image_tag.tag_id = $1
+        ORDER BY images.id DESC
+        LIMIT 2;`,
+        [tagId]
+    );
 };
 
 exports.getMoreImages = oldestId => {
     return db
         .query(
-            `SELECT *,
-                (SELECT id FROM images
+            `SELECT *, images.id AS image_id,
+                (SELECT images.id FROM images
                 ORDER BY id ASC
                 LIMIT 1)
                 AS lowest_id
@@ -44,6 +57,39 @@ exports.getMoreImages = oldestId => {
         .catch(err => {
             console.log(err);
             return Promise.reject(new Error("Can't get more images"));
+        });
+};
+
+exports.getMoreImagesByTag = (oldestImageId, tagId) => {
+    return db
+        .query(
+            `
+        SELECT *, images.id AS image_id,
+            (SELECT images.id FROM images
+            INNER JOIN image_tag
+            ON images.id = image_tag.image_id
+            INNER JOIN tags
+            ON tags.id = image_tag.tag_id
+            WHERE image_tag.tag_id = $1
+            ORDER BY id ASC
+            LIMIT 1)
+            AS lowest_id
+        FROM images
+        INNER JOIN image_tag
+        ON images.id = image_tag.image_id
+        INNER JOIN tags
+        ON tags.id = image_tag.tag_id
+        WHERE image_tag.tag_id = $2
+        AND images.id < $1
+        ORDER BY images.id DESC
+        LIMIT 2;`,
+            [oldestImageId, tagId]
+        )
+        .catch(err => {
+            console.log(err);
+            return Promise.reject(
+                new Error(`Can't get more images by tag ID: ${tagId}`)
+            );
         });
 };
 
@@ -144,5 +190,21 @@ exports.upsertTag = (tag, imageId) => {
         .catch(err => {
             console.log(err);
             return Promise.reject(new Error("Can't insert tag"));
+        });
+};
+
+exports.deleteTagFromImage = (imageId, tagId) => {
+    return db
+        .query(
+            `DELETE FROM image_tag
+            WHERE image_tag.image_id = $1
+            AND image_tag.tag_id = $2
+            RETURNING image_tag.image_id, image_tag.tag_id;
+        `,
+            [imageId, tagId]
+        )
+        .catch(err => {
+            console.log(err);
+            return Promise.reject(new Error("Can't delete tag from image"));
         });
 };

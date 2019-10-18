@@ -27,7 +27,7 @@
         </nav>
         <main id="main">
             <div class="card" v-for="image in images">
-                <a :href="'#'+image.id">
+                <a :href="'#'+image.image_id">
                     <img @click="image = image" v-bind:src='image.url' />
                 </a>
                 <div class="card-body">
@@ -124,7 +124,7 @@
                     <h3>Tags</h3>
 
                     <div v-for="imageTag in imageTags">
-                        <button @click="clickTag(imageTag.tag_id)">{{imageTag.tag}}</button>
+                        <button @click="clickTag(imageTag.tag_id)">{{imageTag.tag}}</button><button @click="deleteTag(imageTag.tag_id)">X</button>
                     </div>
                 </div>
             </section>

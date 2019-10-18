@@ -57,6 +57,17 @@ app.get("/more-images/:oldestId", (req, res) => {
         });
 });
 
+app.get("/more-images/:oldestIdForTag/tags/:tagId", (req, res) => {
+    const { oldestIdForTag, tagId } = req.params;
+    db.getMoreImagesByTag(oldestIdForTag, tagId)
+        .then(({ rows }) => {
+            res.json(rows);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
 app.get("/images/:imageId", mw.requireNumber, (req, res) => {
     const { imageId } = req.params;
     db.getImage(imageId)
@@ -141,6 +152,18 @@ app.post("/images/:imageId/tags", mw.formatTags, (req, res) => {
                 tags.push(rows);
             });
             res.json(tags);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+app.post("/images/:imageId/tags/delete", (req, res) => {
+    const { imageId } = req.params;
+    const { tagId } = req.body;
+    db.deleteTagFromImage(imageId, tagId)
+        .then(result => {
+            res.json(result);
         })
         .catch(err => {
             console.log(err);

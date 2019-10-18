@@ -13,7 +13,9 @@
         mounted: function() {
             this.getTags();
         },
-        updated: function() {},
+        updated: function() {
+            console.log("SELECTED IMAGE", this.selectedImage);
+        },
         watch: {
             selectedImage: function() {
                 this.getTags();
@@ -46,9 +48,24 @@
                 this.formTags = "";
             },
             clickTag: function(tagId) {
-                console.log("tag clicked");
-                console.log(tagId);
                 this.$emit("contact-chicken", tagId);
+            },
+            deleteTag: function(tagId) {
+                let fd = {
+                    tagId
+                };
+                axios
+                    .post(`/images/${this.selectedImage}/tags/delete`, fd)
+                    .then(({ data }) => {
+                        this.imageTags = this.imageTags.filter(tag => {
+                            if (tag.tag_id != data.rows[0].tag_id) {
+                                return tag;
+                            }
+                        });
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
             }
         }
     };
@@ -177,8 +194,10 @@
         },
         updated: function() {
             this.updateMoreButton();
+            console.log("OLDEST IMAGE'S ID:", this.oldestImageId);
         },
         destroyed: function() {},
+
         methods: {
             upload: function() {
                 let myVue = this;
@@ -198,7 +217,6 @@
                 if (!isNaN(this.tagId) && this.tagId != null) {
                     path += `/tags/${this.tagId}`;
                 }
-                console.log(path);
                 axios
                     .get(path)
                     .then(({ data }) => {
@@ -209,10 +227,19 @@
                     });
             },
             getMoreImages: function() {
+                let path = `/more-images/${this.oldestImageId}`;
+                if (!isNaN(this.tagId) && this.tagId != null) {
+                    path += `/tags/${this.tagId}`;
+                }
                 axios
-                    .get(`/more-images/${this.oldestImageId}`)
+                    .get(path)
                     .then(({ data }) => {
                         this.images = this.images.concat(...data);
+
+                        this.images.forEach(im => {
+                            console.log("IMAGE ID", im.image_id);
+                        });
+                        // this.getNextImages();
                     })
                     .catch();
             },
@@ -246,9 +273,14 @@
                     this.lowestImageId = this.images[
                         this.images.length - 1
                     ].lowest_id;
-                    this.oldestImageId = this.images[this.images.length - 1].id;
+                    this.oldestImageId = this.images.slice(-1)[0].image_id;
+                    console.log("NUMBER OF IMAGES", this.images.length);
+                    console.log("LOWEST ID IN DATABASE", this.lowestImageId);
+                    console.log("OLDEST IMAGE'S ID:", this.oldestImageId);
                     if (this.oldestImageId === this.lowestImageId) {
                         this.isNotLastImage = false;
+                    } else {
+                        this.isNotLastImage = true;
                     }
                 }
             }
