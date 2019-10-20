@@ -216,4 +216,6 @@ app.post("/images/:imageId/tags/delete", (req, res) => {
         });
 });
 
-app.listen(8080, console.log("I'm listening"));
+if (require.main === module) {
+    app.listen(process.env.PORT || 8080, console.log("I'm listening!"));
+}
