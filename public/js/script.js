@@ -6,51 +6,32 @@
                 imageTags: [],
                 formTags: "",
                 imageId: null,
-                tagClicked: null
+                tagClicked: null,
+                isGettingTagged: false
             };
         },
         props: ["selectedImage"],
         mounted: function() {
             this.getTags();
+            addEventListener("keydown", e => {
+                if (this.isGettingTagged) {
+                    if (e.keyCode == 13) {
+                        this.submitTags();
+                    }
+                }
+            });
         },
-        updated: function() {
-            // console.log("SELECTED IMAGE", this.selectedImage);
-        },
+        updated: function() {},
         watch: {
             selectedImage: function() {
                 this.getTags();
             }
         },
         methods: {
-            getTags: function() {
-                axios
-                    .get(`/images/${this.selectedImage}/tags`)
-                    .then(({ data }) => {
-                        this.imageTags = data;
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
+            tagSelected: function(tagId) {
+                this.$emit("tag-selected", tagId);
             },
-            submitTags: function() {
-                let fd = {
-                    tags: this.formTags,
-                    imageId: this.selectedImage
-                };
-                axios
-                    .post(`/images/${this.selectedImage}/tags`, fd)
-                    .then(({ data }) => {
-                        this.imageTags = this.imageTags.concat(...data);
-                        this.resetForm();
-                    });
-            },
-            resetForm: function() {
-                this.formTags = "";
-            },
-            clickTag: function(tagId) {
-                this.$emit("contact-chicken", tagId);
-            },
-            deleteTag: function(tagId) {
+            removeTagFromImage: function(tagId) {
                 let fd = {
                     tagId
                 };
@@ -66,54 +47,105 @@
                     .catch(err => {
                         console.log(err);
                     });
+            },
+            getTags: function() {
+                axios
+                    .get(`/images/${this.selectedImage}/tags`)
+                    .then(({ data }) => {
+                        this.imageTags = data;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
+            resetForm: function() {
+                this.formTags = "";
+            },
+            submitTags: function() {
+                let fd = {
+                    tags: this.formTags,
+                    imageId: this.selectedImage
+                };
+                axios
+                    .post(`/images/${this.selectedImage}/tags`, fd)
+                    .then(({ data }) => {
+                        this.imageTags = this.imageTags.concat(...data);
+                        this.resetForm();
+                    });
             }
         }
     };
 
-    Vue.component("image-component", {
-        template: "#image-template",
-        components: { "image-tags-component": ImageTagsComponent },
+    Vue.component("show-image-component", {
+        template: "#show-image-template",
+        components: {
+            "image-tags-component": ImageTagsComponent
+        },
         data: function() {
             return {
+                comment: "",
+                comments: [],
                 count: 0,
                 image: {},
-                comments: [],
+                imageId: null,
                 username: "",
-                comment: "",
-                imageId: null
+                isGettingCommented: false
             };
         },
         props: ["selectedImage"],
         mounted: function() {
-            // let myVue = this;
             this.getImage();
+            addEventListener("keydown", e => {
+                if (
+                    this.isGettingCommented &&
+                    this.comment != "" &&
+                    this.username != ""
+                ) {
+                    if (e.keyCode == 13) {
+                        this.submitComment();
+                    }
+                }
+            });
         },
-        updated: function() {
-            const canvas = document.getElementById("canvas");
-
-            if (canvas) {
-                canvas.style.height = "84vh";
-                canvas.style.width = "84vw";
-                const ctx = canvas.getContext("2d");
-                const img = new Image();
-                img.src = "./bulletin-board.jpg";
-                // img.src = this.image.url;
-                img.onload = () => {
-                    ctx.drawImage(img, 0, 0);
-                };
-            }
-        },
+        updated: function() {},
         watch: {
             selectedImage: function() {
                 this.getImage();
             }
         },
         methods: {
-            setTag: function(tagId) {
-                this.$emit("contact-mother-chicken", tagId);
-            },
             closeImage: function(tagId) {
                 this.$emit("close-image-modal", tagId);
+            },
+            getImage: function() {
+                axios
+                    .get(`/images/${this.selectedImage}`)
+                    .then(({ data }) => {
+                        if (!data[0]) {
+                            return this.closeImage();
+                        }
+                        this.image = data[0];
+                        return axios.get(
+                            `/images/${this.selectedImage}/comments`
+                        );
+                    })
+                    .then(result => {
+                        if (!result) {
+                            return;
+                        }
+                        const { data } = result;
+                        this.comments = data;
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
+            tagSelected: function(tagId) {
+                this.$emit("tag-selected", tagId);
+            },
+            resetForm: function() {
+                this.username = "";
+                this.comment = "";
             },
             submitComment: function() {
                 let fd = {
@@ -127,63 +159,104 @@
                         this.comments.unshift(data);
                         this.resetForm();
                     });
-            },
-            resetForm: function() {
-                this.username = "";
-                this.comment = "";
-            },
-            getImage: function() {
-                let self = this;
-                axios
-                    .get(`/images/${this.selectedImage}`)
-                    .then(({ data }) => {
-                        if (!data[0]) {
-                            return this.closeImage();
-                        }
-                        self.image = data[0];
-                        return axios.get(
-                            `/images/${self.selectedImage}/comments`
-                        );
-                    })
-                    .then(result => {
-                        if (!result) {
-                            return;
-                        }
-                        const { data } = result;
-                        self.comments = data;
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
             }
         }
     });
 
+    let UploadImageComponent = {
+        template: "#upload-image-template",
+        data: function() {
+            return {
+                desc: "",
+                file: null,
+                tags: "",
+                title: "",
+                username: "",
+                isFormValid: false
+            };
+        },
+        props: ["isUploadingImage"],
+        mounted: function() {
+            addEventListener("keydown", e => {
+                if (this.isFormValid && this.isUploadingImage) {
+                    if (e.keyCode == 13) {
+                        this.upload();
+                    }
+                }
+            });
+        },
+        updated: function() {},
+        destroyed: function() {},
+        watch: {
+            desc: function() {
+                if (
+                    this.file != null &&
+                    this.username != "" &&
+                    this.title != "" &&
+                    this.desc != ""
+                ) {
+                    this.isFormValid = true;
+                } else this.isFormValid = false;
+            }
+        },
+        methods: {
+            closeImageUpload: function() {
+                this.$emit("close-image-upload-modal");
+            },
+            fileSelected: function(e) {
+                this.file = e.target.files[0];
+            },
+            upload: function() {
+                if (!this.isFormValid) {
+                    return;
+                }
+                const fd = new FormData();
+                fd.append("image", this.file);
+                fd.append("username", this.username);
+                fd.append("title", this.title);
+                fd.append("desc", this.desc);
+                fd.append("tags", this.tags);
+                axios
+                    .post("/upload", fd)
+                    .then(({ data }) => {
+                        this.resetForm();
+                        this.$emit("append-image", data);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            },
+            resetForm: function() {
+                this.file = null;
+                this.username = "";
+                this.title = "";
+                this.desc = "";
+                this.tags = "";
+                this.closeImageUpload();
+            }
+        }
+    };
+
     new Vue({
         el: "#page",
-        // components: { Image, Tags },
+        components: {
+            "upload-image-component": UploadImageComponent
+        },
         data: {
             images: [],
             imageCount: null,
-            username: "",
-            title: "",
-            desc: "",
-            tags: "",
-            file: null,
-            selectedImage: location.hash.slice(1),
-            oldestImageId: null,
+            isNotLastImage: false,
+            isUploadingImage: false,
             lowestImageId: null,
-            isNotLastImage: true,
+            notifications: [],
+            oldestImageId: null,
+            selectedImage: location.hash.slice(1),
             selectedTag: null,
-            tag: null,
-            notifications: []
-        },
-        created: function() {
-            this.setImageCount();
+            tag: null
         },
         mounted: function() {
             this.getImages();
-            this.updateImageCount();
+            this.setImageCount();
             addEventListener("hashchange", () => {
                 this.selectedImage = location.hash.slice(1);
             });
@@ -198,38 +271,44 @@
                     if (e.keyCode == 39) {
                         this.nextImage();
                     }
+                } else if (this.isUploadingImage) {
+                    if (e.keyCode == 27) {
+                        this.isUploadingImage = false;
+                    }
                 }
             });
         },
         updated: function() {
             this.updateMoreButton();
-            this.$watch("imageCount", () => {
-                this.notifications.push("A new image has been uploaded");
-            });
         },
-        destroyed: function() {},
         watch: {
             selectedTag: function() {
-                this.getTag();
+                if (this.selectedTag != null) {
+                    this.getTag();
+                }
+            },
+            imageCount: function(newValue, oldValue) {
+                if (oldValue != null) {
+                    if (this.notifications.length == 0) {
+                        this.notifications.push(
+                            "A new image has been uploaded"
+                        );
+                    }
+                }
             }
         },
         methods: {
-            setTag: function(tagId) {
-                this.selectedTag = tagId;
-                this.closeImage();
+            appendImage: function(data) {
+                this.images.unshift(data);
             },
-            upload: function() {
-                let myVue = this;
-                const fd = new FormData();
-                fd.append("image", this.file);
-                fd.append("username", this.username);
-                fd.append("title", this.title);
-                fd.append("desc", this.desc);
-                fd.append("tags", this.tags);
-                axios.post("/upload", fd).then(({ data }) => {
-                    myVue.images.unshift(data);
-                    this.resetForm();
-                });
+            closeImage: function() {
+                this.getImages();
+                this.selectedImage = null;
+                location.hash = "";
+                history.replaceState(null, null, " ");
+            },
+            closeImageUpload: function() {
+                this.isUploadingImage = false;
             },
             getImages: function() {
                 let path = "/images";
@@ -257,24 +336,6 @@
                     })
                     .catch();
             },
-            setImageCount: function() {
-                console.log("counting images");
-
-                axios
-                    .get(`/count-images`)
-                    .then(({ data }) => {
-                        this.imageCount = data.rows[0].image_count;
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
-            },
-            updateImageCount: function() {
-                setTimeout(() => {
-                    this.setImageCount();
-                    this.updateImageCount();
-                }, 5000);
-            },
             getTag: function() {
                 axios
                     .get(`/tag/${this.selectedTag}`)
@@ -285,41 +346,46 @@
                         console.log(err);
                     });
             },
-            removeTagFilter: function() {
-                this.selectedTag = null;
-                this.tag = null;
+            nextImage: function() {
+                this.selectedImage++;
+                location.hash = `#${this.selectedImage}`;
+            },
+            notificationClicked: function() {
                 this.getImages();
-            },
-            resetForm: function() {
-                this.file = null;
-                this.username = "";
-                this.title = "";
-                this.desc = "";
-                this.tags = "";
-            },
-            fileSelected: function(e) {
-                this.file = e.target.files[0];
-            },
-            closeImage: function() {
-                this.getImages();
-                this.selectedImage = null;
-                location.hash = "";
-                history.replaceState(null, null, " ");
+                this.notifications = [];
             },
             prevImage: function() {
                 this.selectedImage--;
                 location.hash = `#${this.selectedImage}`;
             },
-            nextImage: function() {
-                this.selectedImage++;
-                location.hash = `#${this.selectedImage}`;
+            removeTagFilter: function() {
+                this.selectedTag = null;
+                this.tag = null;
+                this.getImages();
+            },
+            setImageCount: function() {
+                setTimeout(() => {
+                    axios
+                        .get(`/count-images`)
+                        .then(({ data }) => {
+                            if (this.imageCount < data.rows[0].image_count) {
+                                this.imageCount = data.rows[0].image_count;
+                            }
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        });
+                    this.setImageCount();
+                }, 5000);
+            },
+            setTag: function(tagId) {
+                this.selectedTag = tagId;
+                this.closeImage();
             },
             updateMoreButton: function() {
                 if (this.images.length > 0) {
                     this.lowestImageId = this.images.slice(-1)[0].lowest_id;
                     this.oldestImageId = this.images.slice(-1)[0].image_id;
-                    console.log("LOWEST ID IN DATABASE", this.lowestImageId);
-                    console.log("LOWEST ID IN ARRAY", this.oldestImageId);
                     if (
                         this.oldestImageId === this.lowestImageId ||
                         this.lowestImageId == null
@@ -329,6 +395,9 @@
                         this.isNotLastImage = true;
                     }
                 }
+            },
+            uploadImage: function() {
+                this.isUploadingImage = true;
             }
         }
     });

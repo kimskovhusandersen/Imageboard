@@ -1,8 +1,16 @@
-const { username, password } = require("./secrets.json");
 const spicedPg = require("spiced-pg");
-const db = spicedPg(
-    `postgres://${username}:${password}@localhost:5432/imageboard`
-);
+// ------------------------------------------------------------------------
+// FOR HEROKU:
+let db;
+if (process.env.DATABASE_URL) {
+    db = spicedPg(process.env.DATABASE_URL);
+} else {
+    const { username, password } = require("./secrets.json");
+    db = spicedPg(
+        `postgres://${username}:${password}@localhost:5432/imageboard`
+    );
+}
+// ------------------------------------------------------------------------
 
 exports.getImages = () => {
     return db.query(`
@@ -13,7 +21,7 @@ exports.getImages = () => {
             AS lowest_id
         FROM images
         ORDER BY id DESC
-        LIMIT 2;`);
+        LIMIT 5;`);
 };
 
 exports.getImagesByTag = tagId => {
@@ -36,7 +44,7 @@ exports.getImagesByTag = tagId => {
         ON tags.id = image_tag.tag_id
         WHERE image_tag.tag_id = $1
         ORDER BY images.id DESC
-        LIMIT 2;`,
+        LIMIT 5;`,
         [tagId]
     );
 };
@@ -51,7 +59,7 @@ exports.getMoreImages = oldestId => {
                 AS lowest_id
             FROM images WHERE id < $1
             ORDER BY id DESC
-            LIMIT 2;`,
+            LIMIT 5;`,
             [oldestId]
         )
         .catch(err => {
@@ -82,7 +90,7 @@ exports.getMoreImagesByTag = (oldestImageId, tagId) => {
         WHERE image_tag.tag_id = $2
         AND images.id < $1
         ORDER BY images.id DESC
-        LIMIT 2;`,
+        LIMIT 5;`,
             [oldestImageId, tagId]
         )
         .catch(err => {
@@ -131,7 +139,7 @@ exports.getTag = tagId => {
 
 exports.getComments = imageId => {
     return db
-        .query(`SELECT * FROM comments WHERE $1 = image_id ORDER BY id DESC;`, [
+        .query(`SELECT * FROM comments WHERE $1 = image_id ORDER BY id ASC;`, [
             imageId
         ])
         .catch(err => {

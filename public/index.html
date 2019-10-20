@@ -2,139 +2,143 @@
 <html>
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Project Imageboard</title>
+    <link href="https://fonts.googleapis.com/css?family=Lora&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Oswald&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/master.css">
+    <link rel="stylesheet" href="/css/image_board.css">
+    <link rel="stylesheet" href="/css/new_image.css">
+    <link rel="stylesheet" href="/css/show_image.css">
+    <link rel="stylesheet" href="/css/tags.css">
 </head>
 
 <body>
-    <section id="page">
-
-        <header id="header">
-            <h3>{{title}}</h3>
-            <div class="notifcations" v-for="notification in notifications" v-if="notifications">
-                {{notification}}. Click <button @click="getImages">here</button> to update imageboard.
-            </div>
-        </header>
-        <nav>
-            <label for="username">Username:</label>
-            <input id="username" v-model="username" type="text" name="username">
-            <label for="title">Title:</label>
-            <input id="title" v-model="title" type="text" name="title">
-            <label for="desc">Description:</label>
-            <input id="desc" v-model="desc" type="text" name="description">
-            <label for="file">File:</label>
-            <input id="file" type="file" accept="image/*" v-on:change="fileSelected">
-            <label for="tags">Tags:</label>
-            <input id="tags" v-model="tags" type="text" name="tags">
-            <button @click="upload" type="submit" name="upload-btn">Upload</button>
-            <p v-if="tag">Filtered by tag: <button>{{tag.tag}}</button><button @click="removeTagFilter(tag.id)">X</button></p>
-        </nav>
-        <main id="main">
-
-            <div class="card" v-for="image in images">
-                <a :href="'#'+image.image_id">
-                    <img @click="image = image" v-bind:src='image.url' />
-                </a>
-                <div class="card-body">
-                    <h5 class="card-title">{{image.title}}</h5>
-                    <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="btn btn-primary">Go somewhere</a> -->
+    <section id="page" v-bind:class="{ on: selectedImage || isUploadingImage}">
+        <main>
+            <div id="image_board">
+                <header>
+                    <h3>Images</h3>
+                </header>
+                <div class="sub-nav">
+                    <span id="notification" v-for="notification in notifications" v-bind:class="{ on: notifications}" v-if="notifications">{{notification}}. Click <button @click="notificationClicked">here</button> to update.</span>
+                    <span v-if="tag">Filter by: {{tag.tag}} <button @click="removeTagFilter(tag.id)">X</button></span>
                 </div>
+                <div class="image-grid">
+                    <div class="image" v-for="image in images">
+                        <a :href="'#'+image.image_id">
+                            <img @click="image = image" v-bind:src='image.url' />
+                        </a>
+                        <div class="image-icons">
+                            <img src="icons/like_red.png" alt="like_red">
+                            <span>{{image.title}}</span>
+                            <span>3 days ago</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="more-button" v-bind:class="{ on: isNotLastImage}" @click="getMoreImages" type="submit" name="more-btn">More</button>
+                <footer>
+                    <img @click="uploadImage" src="icons/add_image.svg" alt="add image" />
+                </footer>
             </div>
-            <button class="more-button" v-bind:class="{ on: isNotLastImage}" @click="getMoreImages" type="submit" name="more-btn">More</button>
+
         </main>
-
-        <image-component @close-image-modal="closeImage" @contact-mother-chicken="setTag" v-bind:selected-image="selectedImage" v-if="selectedImage"></image-component>
-        <!-- <p @click="selectedFruit = fruit.id" class="fruit" v-for="fruit in fruits" v-if="fruits.length">{{fruit.title}}</p> -->
-
-
-        <footer id="footer">Footer</footer>
+        <show-image-component @close-image-modal="closeImage" @tag-selected="setTag" v-bind:selected-image="selectedImage" v-if="selectedImage">
+        </show-image-component>
+        <upload-image-component @append-image="appendImage" @close-image-upload-modal="closeImageUpload" v-bind:is-uploading-image="isUploadingImage" v-if="isUploadingImage">
+        </upload-image-component>
     </section>
 
     <!-- Image template -->
-    <script type="text/x-template" id="image-template">
-        <div class="image-component">
-            <header>
-                <a :href="'#'+image.prev_id">
-                    Prev
-                </a>
-                <button type="button" @click="closeImage" class="close-btn">
-                    <span>&nbsp;</span>
-                    <span>&nbsp;</span>
-                </button>
-                <a :href="'#'+image.next_id">
-                    Next
-                </a>
+    <script type="text/x-template" id="show-image-template">
+        <div id="show_image_wrapper">
+            <div id="show_image">
+                <header>
+                    <a @click="closeImage"></a>
+                    <h3>Image</h3>
+                </header>
+                <div id="image-wrapper">
+                    <a :href="'#'+image.prev_id"></a>
+                    <img id="image" v-bind:src='image.url' />
+                    <a :href="'#'+image.next_id"></a>
+                </div>
+                <div id="content-wrapper">
+                    <div id="image_infos">
+                        <span class="username">{{image.username}}</span>
+                        <p>{{image.title}}</p>
+                    </div>
 
-            </header>
-            <main>
-                <!-- <section>
-                    <canvas id="canvas" width="400px" height="200px"/>
-                </section> -->
-                <section>
-                    <div class="row">
-                        <h1>{{image.title}}</h1>
-                        <img v-bind:src='image.url' />
-                        <p>{{image.description}}</p>
-                        <p>{{image.username}}</p>
+                    <image-tags-component @tag-selected="tagSelected" v-bind:selected-image="selectedImage"></image-tags-component>
+
+                    <div id="image-icons">
+                        <img src="icons/like_red.png" alt="like_red">
+                        <span>3 days ago</span>
                     </div>
-                </section>
-                <section>
-                    <div class="row">
-                        <image-tags-component @contact-chicken="setTag" v-bind:selected-image="selectedImage" v-if="selectedImage"></image-tags-component>
-                    </div>
-                </section>
-                <section>
-                    <div class="row">
-                        <h3>New comment:</h3>
-                        <label for="username">Username:</label>
-                        <input id="username" v-model="username" type="text" name="username">
-                        <label for="comment">Comment:</label>
-                        <input id="comment" v-model="comment" type="text" name="comment">
-                        <input id="image_id" v-model="imageId" type="hidden" name="imageId">
-                        <button @click="submitComment" type="submit" name="button">Submit</button>
-                    </div>
-                </section>
-                <section>
-                    <div class="row">
-                        <h3>Comments</h3>
+                    <div id="comments">
+                        <a>View previous comments</a>
                         <div class="comment" v-for="comment in comments">
-                            <div class="comment-body">
-                                <h5 class="comment-title">Username: {{comment.username}}</h5>
-                                <p class="comment-text">Comment: {{comment.comment}}</p>
-                                    <!-- <a href="#" class="btn btn-primary">Go somewhere</a> -->
-                            </div>
+                            <p><span class="username">{{comment.username}} </span>{{comment.comment}}</p>
                         </div>
                     </div>
-
-                </section>
-            </main>
+                    <div id="upload_comment">
+                        <input id="username" v-model="username" type="text" name="username" required placeholder="Username..">
+                        <input @focus="isGettingCommented = true" id="comment" v-model="comment" type="text" name="comment" required placeholder="Write a comment..">
+                        <input id="image_id" v-model="imageId" type="hidden" name="imageId">
+                        <!-- <button @click="submitComment" type="submit" name="button">Submit</button> -->
+                    </div>
+                </div>
+                <!-- <footer>
+                    <img src="icons/add_image.svg" alt="add image" />
+                </footer> -->
+            </div>
         </div>
     </script>
 
     <!-- Tags-template -->
     <script type="text/x-template" id="image-tags-template">
-        <div class="image-tags-component">
-            <section>
-                <div class="row">
-                    <h3>Add a Tag to image:</h3>
-                    <label for="formTags">Tags (separated with ","):</label>
-                    <input id="formTags" v-model="formTags" type="text" name="formTags">
-                    <input id="image_id" v-model="imageId" type="hidden" name="imageId">
-                    <button @click="submitTags" type="submit" name="button">Submit</button>
-                </div>
-            </section>
-            <section>
-                <div class="row">
-                    <h3>Tags</h3>
-
-                    <div v-for="imageTag in imageTags">
-                        <button @click="clickTag(imageTag.tag_id)">{{imageTag.tag}}</button><button @click="deleteTag(imageTag.tag_id)">X</button>
-                    </div>
-                </div>
-            </section>
+        <div id="tags-wrapper">
+            <div id="tags" v-for="imageTag in imageTags">
+                <span class="tag" @click="tagSelected(imageTag.tag_id)">{{imageTag.tag}}</span><span class="removeTag" @click="removeTagFromImage(imageTag.tag_id)">X</span>
+            </div>
+            <input @focus="isGettingTagged = true" v-model="formTags" type="text"placeholder="Add tags..">
+            <input v-model="imageId" type="hidden" >
+            <!-- <button @click="submitTags" type="submit" name="button">Submit</button> -->
         </div>
     </script>
+
+    <!-- upload image template -->
+    <script type="text/x-template" id="upload-image-template">
+        <div id="upload_image_wrapper">
+            <div id="upload_image">
+                <header>
+                    <a @click="closeImageUpload">
+                        <img src="icons/back.png" alt="back" />
+                    </a>
+                    <h3>New Image</h3>
+                </header>
+                <div id="file-wrapper" class="labels">
+                    <input id="file-input" type="file" accept="image/*" required v-on:change="fileSelected">
+                    <label id="file-label" for="file">
+                        <span>Select an image</span>
+                    </label>
+                </div>
+                <input id="username" v-model="username" type="text" name="username" required placeholder="Username..">
+                <input id=" title" v-model="title" type="text" name="title" required placeholder="Title..">
+                <input id="desc" v-model="desc" type="text" name="description" required  placeholder="Write a caption..">
+                <div class="labels">
+                    <label for="tags"><span>Separate tags with commas ("First Tag, Another Tag, ...)"</span></label>
+                </div>
+                <input id="tags" v-model="tags" type="text" name="tags" placeholder="Tag image">
+                <button @click=" upload" type="submit" name="upload-btn">Upload</button>
+                <footer>
+                    <!-- <img src="icons/add_image.svg" alt="add image" /> -->
+                </footer>
+            </div>
+        </div>
+    </script>
+
+
+
 
     <script src="/js/vue.js"></script>
     <script src="/js/axios.min.js"></script>

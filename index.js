@@ -82,7 +82,6 @@ app.get("/images/:imageId", mw.requireNumber, (req, res) => {
 app.get("/count-images", (req, res) => {
     db.countImages()
         .then(result => {
-            console.log(result);
             res.json(result);
         })
         .catch(err => {
@@ -101,22 +100,42 @@ app.get("/tag/:tagId", (req, res) => {
         });
 });
 
-app.post("/upload", uploader.single("image"), s3.upload, (req, res) => {
-    const { username, title, desc } = req.body;
-    const { file } = req;
-    const url = `${s3Url}${file.filename}`;
-    db.addImage(username, title, desc, url)
-        .then(({ rows }) => {
-            req.body.imageId = rows[0].id;
-            mw.formatTags(req, res);
-            //send image to client
-            res.json(rows[0]);
-        })
-        .catch(err => {
-            console.log(err);
-            res.sendStatus(500);
-        });
-});
+app.post(
+    "/upload",
+    uploader.single("image"),
+    s3.upload,
+    mw.formatTags,
+    (req, res) => {
+        const { username, title, desc, tags } = req.body;
+        const { file } = req;
+        const url = `${s3Url}${file.filename}`;
+        const tagPromises = [];
+        let imageId;
+        db.addImage(username, title, desc, url)
+            .then(({ rows }) => {
+                imageId = rows[0].id;
+                tags.forEach(tag => {
+                    tagPromises.push(db.upsertTag(tag, imageId));
+                });
+                Promise.all(tagPromises)
+                    .then(result => {
+                        // console.log(result);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+                return rows;
+            })
+            .then(rows => {
+                //send image to client
+                res.json(rows[0]);
+            })
+            .catch(err => {
+                console.log(err);
+                res.sendStatus(500);
+            });
+    }
+);
 
 app.get("/images/:id/comments", (req, res) => {
     const { id: imageId } = req.params;
@@ -165,7 +184,12 @@ app.get("/images/tags/:tagId", (req, res) => {
 });
 
 app.post("/images/:imageId/tags", mw.formatTags, (req, res) => {
-    let { tagPromises } = req.body;
+    let { tags } = req.body;
+    const { imageId } = req.params;
+    let tagPromises = [];
+    tags.forEach(tag => {
+        tagPromises.push(db.upsertTag(tag, imageId));
+    });
     Promise.all(tagPromises)
         .then(result => {
             let tags = [];
