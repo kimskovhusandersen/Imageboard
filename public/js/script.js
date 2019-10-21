@@ -299,6 +299,7 @@
         },
         methods: {
             appendImage: function(data) {
+                this.imageCount++;
                 this.images.unshift(data);
             },
             closeImage: function() {
