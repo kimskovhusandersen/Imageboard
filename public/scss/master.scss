@@ -1,0 +1,128 @@
+@import "./partials/reset";
+@import "./partials/mixins";
+@import "./partials/variables";
+@import "./partials/image-board";
+@import "./partials/upload-image";
+@import "./partials/tags";
+@import "./partials/show-image";
+@include google-font("Alegreya+Sans");
+@include google-font("Titillium+Web");
+
+* {
+    box-sizing: border-box;
+    font-family: "Titillium Web", sans-serif;
+}
+@for $i from 1 through 6 {
+    h#{$i} {
+        font-size: $base-font-size + $heading-scale * (6 - $i);
+    }
+}
+
+#page {
+    position: relative;
+    width: 100%;
+
+    nav {
+        height: $header-height;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background-color: $header-bg-color;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+
+        .close {
+            height: calc(#{$header-height} - 10px);
+            width: calc(#{$header-height} - 10px);
+            position: fixed;
+            top: 5px;
+            left: 5px;
+            cursor: pointer;
+            color: $base-color;
+
+            &:hover {
+                color: lighten($base-color, 15%);
+                background-color: darken($header-bg-color, 5%);
+            }
+        }
+
+        .notification-wrapper {
+            height: $notification-height;
+            width: 100%;
+            border-left: 1px solid $border-color;
+            padding-right: 10px;
+            @include space-between;
+
+            span {
+                display: block;
+
+                #notification {
+                    visibility: hidden;
+
+                    .on {
+                        visibility: visible;
+                    }
+                }
+
+                button {
+                    @include button;
+                }
+            }
+        }
+    }
+
+    .content {
+        width: 100%;
+        min-height: $content-height;
+        position: absolute;
+        top: calc(#{$header-height} + 10px);
+        background-color: $content-bg-color;
+    }
+
+    .toolbar {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: $toolbar-height;
+        background: #fff;
+        box-shadow: 0 -4px 8px 0 rgba(0, 0, 0, 0.2), 0 -6px 20px 0 rgba(0, 0, 0, 0.19);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+
+        img {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 95%;
+            padding: 7px;
+            cursor: pointer;
+
+            &:active {
+                border: 1px solid #666;
+                border-radius: 4px;
+            }
+        }
+    }
+}
+
+button.more-button {
+    visibility: hidden;
+}
+
+button.more-button.on {
+    visibility: visible;
+}
+@include small-screens {
+    font-size: 100%;
+}
+@include medium-screens {
+    font-size: 115%;
+}
+@include large-screens {
+    font-size: 125%;
+}

@@ -1,0 +1,65 @@
+#image-board {
+    .card {
+        position: relative;
+        width: 100%;
+        height: calc(100vw + #{$card-footer-height});
+        border-radius: 2px;
+        box-shadow: 0 2px 4px #aaa;
+        margin-bottom: 10px;
+        background-color: $card-bg-color;
+
+        .card-header {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: $card-header-height;
+            @include space-between;
+            @include small-padding;
+
+            .photo-title {
+                white-space: nowrap;
+                overflow: hidden;
+                max-width: calc(100% - 25px);
+            }
+
+            .profile-image {
+                @include profile-image;
+            }
+        }
+
+        .image-link-wrapper {
+            position: absolute;
+            top: $card-header-height;
+            height: $card-image-height;
+            width: 100%;
+
+            img {
+                @include full-size-image;
+            }
+        }
+
+        .card-footer {
+            position: absolute;
+            bottom: 0;
+            @include icons-wrapper;
+        }
+        @include medium-screens {
+            display: inline;
+            width: calc(33% - 5px);
+            float: left;
+            margin-right: 5px;
+            height: 350px;
+        }
+        @include large-screens {
+            width: calc(25% - 5px);
+            height: 375px;
+        }
+        @include largest-screens {
+            width: calc(20% - 5px);
+            height: 400px;
+        }
+    }
+    @include medium-screens {
+        padding: 0 0 0 10px;
+    }
+}

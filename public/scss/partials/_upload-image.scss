@@ -1,0 +1,77 @@
+#upload-image {
+    @include small-padding;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+
+    .field-wrapper {
+        width: 100%;
+        margin: 5px 0;
+        position: relative;
+        height: $input-height;
+        display: flex;
+        justify-content: center;
+
+        #file {
+            opacity: 0;
+        }
+
+        .file-custom {
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            cursor: pointer;
+            z-index: 5;
+            user-select: none;
+
+            &::before {
+                position: absolute;
+                top: -.075rem;
+                right: -.075rem;
+                bottom: -.075rem;
+                z-index: 6;
+                display: block;
+                content: "Browse";
+                height: inherit;
+                @include button($bg-color: $light-grey);
+            }
+
+            &::after {
+                content: "Choose file...";
+            }
+        }
+
+        input {
+            width: 100%;
+        }
+
+        .file-custom,
+        input {
+            @include input-field;
+        }
+
+        #tag-label {
+            font-size: $tiny-text;
+            height: inherit;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0.5rem 1rem;
+        }
+
+        #upload-btn {
+            @include button;
+        }
+        @include medium-screens {
+            width: 50%;
+        }
+        @include large-screens {
+            width: 45%;
+        }
+        @include largest-screens {
+            width: 33%;
+        }
+    }
+}

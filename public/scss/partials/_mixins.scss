@@ -1,0 +1,88 @@
+@mixin small-screens() {
+    @media only screen and (min-width: 480px) {
+        @content;
+    }
+}
+@mixin medium-screens() {
+    @media only screen and (min-width: 768px) {
+        @content;
+    }
+}
+@mixin large-screens() {
+    @media only screen and (min-width: 992px) {
+        @content;
+    }
+}
+@mixin largest-screens() {
+    @media only screen and (min-width: 1200px) {
+        @content;
+    }
+}
+@mixin google-font($font) {
+    $font: unquote($font);
+    @import url('https://fonts.googleapis.com/css?family=#{$font}');
+}
+@mixin button($bg-color: white) {
+    padding: 0.5rem 1rem;
+    line-height: 1.5;
+    color: #555;
+    background-color: $bg-color;
+    cursor: pointer;
+    border: 0.075rem solid #ddd;
+    border-radius: 0 0.25rem 0.25rem 0;
+
+    &:active,
+    &:hover {
+        background-color: darken($light-grey, 10%);
+    }
+}
+@mixin space-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+@mixin small-padding {
+    padding: 10px;
+}
+@mixin small-image {
+    height: 25px;
+    width: 25px;
+}
+@mixin full-size-image {
+    min-height: 100%;
+    min-width: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: cover;
+}
+@mixin profile-image {
+    border-radius: 50%;
+    height: 25px;
+    width: 25px;
+}
+@mixin input-field {
+    height: inherit;
+    display: block;
+    padding: 0.5rem 1rem;
+    line-height: 1.5;
+    background-color: #fff;
+    border: 0.075rem solid #ddd;
+    border-radius: 0.25rem;
+    box-shadow: inset 0 0.2rem 0.4rem rgba(0,0,0,.05);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    font-size: $small-text;
+    color: $base-color;
+}
+@mixin icons-wrapper {
+    height: $card-footer-height;
+    width: 100%;
+    @include space-between;
+    @include small-padding;
+
+    img {
+        @include small-image;
+        margin-right: 5px;
+    }
+}

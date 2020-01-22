@@ -1,0 +1,26 @@
+//
+// Container sizes
+$header-height: 47px;
+$notification-height: 47px;
+$toolbar-height: 47px;
+$content-height: calc(100vh - #{$header-height} - #{$toolbar-height}); //
+$card-header-height: 40px;
+$card-footer-height: 50px;
+$card-image-height: calc(100% - #{$card-header-height} - #{$card-footer-height}); //
+$input-height: 2.5rem;
+$tag-height: 20px; //
+// Font-sizes
+$base-font-size: 12px;
+$heading-scale: 2; // amount of px headings grow from h6 to h1
+$tiny-text: 12px; //
+$small-text: 14px; //
+$medium-text: 18px;
+$large-text: 24px; //
+// colors
+$base-color: #111; //
+$light-grey: #eee;
+$border-color: #ddd;
+$header-bg-color: #fefefe;
+$content-bg-color: $light-grey;
+$toolbar-bg-color: $header-bg-color;
+$card-bg-color: white;

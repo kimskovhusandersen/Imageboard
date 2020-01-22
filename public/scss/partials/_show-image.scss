@@ -1,0 +1,109 @@
+#show-image {
+    @include small-padding;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+
+    #image-wrapper {
+        width: 100%;
+
+        .prev-image {
+            position: absolute;
+            top: 5px;
+            height: 300px;
+            width: 50px;
+
+            &:active {
+                background: rgba(0, 0, 0, 0.7);
+            }
+
+            &::before {
+                content: "<";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #111;
+                font-size: 35px;
+            }
+        }
+
+        #image {
+            object-fit: cover;
+            min-width: 100%;
+            max-width: 100%;
+            min-height: 300px;
+            max-height: 300px;
+        }
+
+        .next-image {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            height: 300px;
+            width: 50px;
+
+            &:active {
+                background: rgba(0, 0, 0, 0.7);
+            }
+
+            &::before {
+                content: ">";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #111;
+                font-size: 35px;
+            }
+        }
+    }
+
+    #content-wrapper {
+        width: 100%;
+
+        .content-header {
+            height: 30px;
+            background-color: lighten($light-grey,15%);
+            @include space-between;
+            @include small-padding;
+
+            img {
+                @include profile-image;
+            }
+        }
+
+        .wrapper {
+            margin-bottom: 10px;
+        }
+
+        .icons-wrapper {
+            @include icons-wrapper;
+            background-color: $header-bg-color;
+        }
+
+        #comments-wrapper {
+            @include small-padding;
+            background-color: $header-bg-color;
+
+            .comment {
+                background-color: $content-bg-color;
+                @include small-padding;
+                border-radius: 25px;
+                height: $input-height;
+                overflow: hidden;
+
+                .comment-username {
+                    margin-right: 10px;
+                    height: 100%;
+                    font-weight: 700;
+                }
+
+                .comment {
+                    height: 100%;
+                }
+            }
+        }
+    }
+}

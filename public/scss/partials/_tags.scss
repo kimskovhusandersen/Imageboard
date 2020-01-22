@@ -1,0 +1,56 @@
+#tags {
+    background-color: $header-bg-color;
+    height: $card-header-height;
+    @include small-padding;
+    display: flex;
+    align-items: baseline;
+
+    .tag {
+        display: inline-flex;
+        cursor: pointer;
+        color: navy;
+        margin-right: 3px;
+        white-space: nowrap;
+        height: $tag-height;
+        font-size: $small-text*1.25;
+        color: $base-color;
+        @include space-between;
+
+        .removeTag {
+            font-size: $small-text;
+            border-radius: 2px;
+            padding: 2px 5px;
+            margin-left: 1px;
+            cursor: pointer;
+
+            &:active,
+            &:hover {
+                outline: 1px solid $light-grey;
+                color: black;
+                font-weight: 600;
+            }
+        }
+    }
+
+    .input-wrapper {
+        height: $tag-height;
+        @include space-between;
+        margin-left: 10px;
+        border-bottom: 2px dotted darken($light-grey, 15%);
+
+        input {
+            height: inherit;
+            border: none;
+            font-size: $small-text;
+
+            &::placeholder {
+                font-size: $small-text;
+                color: darken($light-grey,25%);
+            }
+
+            &:focus {
+                outline: 0;
+            }
+        }
+    }
+}

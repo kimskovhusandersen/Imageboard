@@ -1,6 +1,6 @@
 # Imageboard
 
-The imageboard is a single-page application made with Vue.js, where users can post an image of their choosing along with a title and a textual description, add tags, and leave a comments on other peoples' images.
+The imageboard is a single-page application made with Vue.js, where users can post an image of their choosing along with a title and a textual description, add tags, and leave a thoughtful comment on other peoples' images.
 
 It uses Amazon Web Services' (AWS) Simple Storage Service (S3) to store the uploaded images.
 
